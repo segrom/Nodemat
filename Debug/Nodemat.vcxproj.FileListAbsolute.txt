@@ -1,0 +1,2 @@
+H:\Cpp\Nodemat\Debug\Nodemat.exe
+H:\Cpp\Nodemat\Debug\Nodemat.pdb

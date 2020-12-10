@@ -63,11 +63,12 @@ ViewportDX11Renderer::ViewportDX11Renderer(ImguiDX11WinRenderer* imguiRenderer, 
     descDSV.Texture2D.MipSlice = 0;
     NMEX_HR( _pVDevice->CreateDepthStencilView(_pDepthStencil,&descDSV,&_pDepthStencilView));
     
-    _pScene = &ViewportScene(this);
+    _pScene = new ViewportScene(this);
 }
 
 ViewportDX11Renderer::~ViewportDX11Renderer() {
     _pScene->~ViewportScene();
+    delete _pScene;
     _RELEASE(_pVRenderTarget);
     _RELEASE(_pRenderTargetTexture);
     _RELEASE(_pDepthStencil);
@@ -76,18 +77,14 @@ ViewportDX11Renderer::~ViewportDX11Renderer() {
 
 void ViewportDX11Renderer::Frame() {
     _pVContext->OMSetRenderTargets(1, &_pVRenderTarget,_pDepthStencilView);
-    float color[4] = { 0.0f, 1.0f, 0.0f, 1.0f };
+    float color[4] = { 0.0f, 0.2f, 0.0f, 1.0f };
     _pVContext->ClearRenderTargetView(_pVRenderTarget, color);
     _pVContext->ClearDepthStencilView(_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-    _pScene->Render();
 
-   _pVContext->OMSetRenderTargets(1, &_pVRenderTarget, _pDepthStencilView);
-
-    // собственно здесь мы рисуем полученную выше текстуру как обычное двухмерное изображение
-
-    //_pVContext->UpdateSubresource(m_constantBuffer, 0, NULL, &cb, 0, 0);
-    //_pVContext->VSSetConstantBuffers(0, 1, &m_constantBuffer);
-    _pVContext->PSSetShaderResources(0, 1, &_shaderResourceView);
+    //_pVContext->PSSetShaderResources(0, 1, &_shaderResourceView);
+    _pScene->Render(this);
+    
+    _pVSwapChain->Present(1, 0);
 }
 
 ID3D11ShaderResourceView* ViewportDX11Renderer::GetShaderResourceView() {

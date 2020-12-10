@@ -6,15 +6,17 @@
 
 
 class ImguiDX11WinRenderer;
+class ViewportScene;
 class ViewportDX11Renderer :public ViewportRenderer
 {
-    friend class ViewportScene;
 public:
     ViewportDX11Renderer(ImguiDX11WinRenderer* imguiRenderer, ImVec2 size);
     ~ViewportDX11Renderer();
     void Frame() override;
     ID3D11ShaderResourceView* GetShaderResourceView();
-private:
+protected:
+    friend class ViewportScene;
+
     ViewportScene* _pScene = nullptr;
 
     ID3D11Device* _pVDevice = nullptr;

@@ -10,15 +10,15 @@ class ViewportScene
 public:
 	ViewportScene(ViewportDX11Renderer* vpRenderer);
 	~ViewportScene();
-	void Render();
+	void Render(ViewportDX11Renderer* vpRenderer);
 private:
-	ViewportDX11Renderer* _myViewportRenderer;
-	ID3D11Buffer* _pVertexBuffer;
-	ID3D11Buffer* _pIndexBuffer;
-	ID3D11Buffer* _pConstantBuffer;
-	ID3D11InputLayout* _pVertexLayout;
-	ID3D11VertexShader* _pVertexShader;
-	ID3D11PixelShader* _pPixelShader;
+	ViewportDX11Renderer* _myViewportRenderer = nullptr;
+	ID3D11Buffer* _pVertexBuffer = nullptr;
+	ID3D11Buffer* _pIndexBuffer = nullptr;
+	ID3D11Buffer* _pConstantBuffer = nullptr;
+	ID3D11InputLayout* _pVertexLayout = nullptr;
+	ID3D11VertexShader* _pVertexShader = nullptr;
+	ID3D11PixelShader* _pPixelShader = nullptr;
 
 	XMMATRIX _worldMat;
 	XMMATRIX _viewMat;

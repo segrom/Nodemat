@@ -17,5 +17,5 @@ VS_OUTPUT vert(VS_INPUT input) {
 }
 
 float4 frag(VS_OUTPUT input) :SV_Target{
-	return float4(1,0,1,1);
+	return float4(1.0f,0.0f,1.0f,1.0f);
 }

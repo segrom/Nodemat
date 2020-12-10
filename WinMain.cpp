@@ -29,7 +29,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     contextRenderer.ImguiInit();
     
     float dpiScale = GetDpiForSystem()/96.0f;
-    std::unique_ptr<ViewportDX11Renderer> vpRenderer= std::make_unique<ViewportDX11Renderer>(&contextRenderer, ImVec2(1024, 1024));
+    ViewportDX11Renderer vpRenderer(&contextRenderer, ImVec2(1024, 1024));
     
     io.Fonts->AddFontFromFileTTF("H:\\Cpp\\Nodemat\\resources\\Roboto-Medium.ttf",16.0f* dpiScale);
 
@@ -133,7 +133,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 
             ed::EndNode();
-
+            
             ed::End();
             ImGui::End();
         }
@@ -149,8 +149,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             };
             ImGui::SetNextWindowSizeConstraints(ImVec2(64, 64), ImVec2(2048, 2048), CustomConstraints::Square);
             ImGui::Begin("View port",&show_viewport, ImGuiWindowFlags_NoScrollbar| ImGuiWindowFlags_NoScrollWithMouse );
-            vpRenderer->Frame();
-            ImTextureID texId = vpRenderer->GetShaderResourceView();
+            vpRenderer.Frame();
+            ImTextureID texId = vpRenderer.GetShaderResourceView();
             ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
             ImVec2 uv_max = ImVec2(1, 1);                       // Lower-right
             float size = IM_MIN(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
@@ -163,8 +163,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
         ImGui::Render();
         contextRenderer.RenderDrawData(ImGui::GetDrawData(), (float*)&clear_color, &io);
+       
     }
-
+   // vpRenderer->~ViewportDX11Renderer();
     ed::DestroyEditor(g_Context);
     contextRenderer.ImguiShutdown();
     ImGui::DestroyContext();

@@ -14,7 +14,7 @@
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
 #include <D3DX11.h>
-
+#include <D3Dcompiler.h>
 
 
 #include "imgui/imgui.h"

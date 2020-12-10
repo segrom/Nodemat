@@ -1,6 +1,5 @@
 #include "ViewportScene.h"
 
-
 using namespace DirectX;
 struct SimpleVertex {
 	XMFLOAT3 Pos;
@@ -22,11 +21,13 @@ HRESULT ViewportScene::CompileShaderFromFile(LPCSTR file, LPCSTR entryPoint, LPC
 		OutputDebugStringA((char*)pErrorBlob->GetBufferPointer());
 		NMEX(1,(char*)pErrorBlob->GetBufferPointer());
 	}
-	pErrorBlob->Release();
+	if(pErrorBlob)pErrorBlob->Release();
 	return hr;
 }
 
-ViewportScene::ViewportScene(ViewportDX11Renderer* vpRenderer) :_myViewportRenderer(vpRenderer) {
+ViewportScene::ViewportScene(ViewportDX11Renderer* vpRenderer){
+
+	_myViewportRenderer = vpRenderer;
 	HRESULT hr = S_OK;
 	ID3D10Blob* pVSBlob = nullptr;
 	NMEX_HR( CompileShaderFromFile("shader.fx", "vert", "vs_4_0", &pVSBlob));
@@ -110,7 +111,7 @@ ViewportScene::ViewportScene(ViewportDX11Renderer* vpRenderer) :_myViewportRende
 
 	_worldMat = XMMatrixIdentity();
 
-	XMVECTOR Eye = XMVectorSet(0.0f, 1.0f, -5.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(0.0f, 1.0f, -3.0f, 0.0f);
 	XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	_viewMat = XMMatrixLookAtLH(Eye, At, Up);
@@ -131,20 +132,27 @@ ViewportScene::~ViewportScene() {
 	_RELEASE(_pPixelShader);
 }
 
-void ViewportScene::Render() {
-	static float t = 0.01;
-	static DWORD dwTimeStart = 0;
+void ViewportScene::Render(ViewportDX11Renderer* vpRenderer) {
 	DWORD dwTimeCur = GetTickCount();
-	if (dwTimeStart == 0) dwTimeStart = dwTimeCur;
-	t = (dwTimeCur - dwTimeStart) / 1000.0f;
+	unsigned int offset = 0;
+	unsigned int stride = sizeof(SimpleVertex);
+	
+	static float rotation = 0.0f;
+	rotation += 3.14f * 0.0005f;
+	if (rotation > 360.0f)
+		rotation -= 360.0f;
 
-	_worldMat = XMMatrixRotationY(t);
+	_worldMat = XMMatrixRotationY(rotation);
 	ConstantBuffer cb;
-	cb.MVP = XMMatrixTranspose(_worldMat) * XMMatrixTranspose(_viewMat) * XMMatrixTranspose(_projectionMat);
-	_myViewportRenderer->_pVContext->UpdateSubresource(_pConstantBuffer, 0, NULL, &cb, 0, 0);
 
-	_myViewportRenderer->_pVContext->VSSetShader(_pVertexShader, NULL, 0);
-	_myViewportRenderer->_pVContext->VSSetConstantBuffers(0, 1, &_pConstantBuffer);
-	_myViewportRenderer->_pVContext->PSSetShader(_pPixelShader, NULL, 0);
-	_myViewportRenderer->_pVContext->DrawIndexed(36, 0, 0);
+
+	cb.MVP = XMMatrixTranspose(_worldMat*_viewMat*_projectionMat);
+	vpRenderer->_pVContext->UpdateSubresource(_pConstantBuffer, 0, NULL, &cb, 0, 0);
+	vpRenderer->_pVContext->IASetVertexBuffers(0, 1, &_pVertexBuffer, &stride, &offset);
+	vpRenderer->_pVContext->IASetIndexBuffer(_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	vpRenderer->_pVContext->VSSetShader(_pVertexShader, NULL, 0);
+	vpRenderer->_pVContext->VSSetConstantBuffers(0, 1, &_pConstantBuffer);
+	vpRenderer->_pVContext->PSSetShader(_pPixelShader, NULL, 0);
+	
+	vpRenderer->_pVContext->DrawIndexed(36, 0, 0);
 }
